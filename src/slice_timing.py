@@ -1,8 +1,23 @@
+"""
+Generates fMRI scan slice timings.
+Usage:
+    $<python> <path>/slice_timing.py [-h, --help] tr num_slices [-p, -pp]
+    
+    Mandatory Arguments: Repetition time (tr), number of slices (num_slices)
+    Default: Outputs to screen and txt file in current working directory.
+    
+    Optional Arguments:
+             -h, --help : \t Diplays the help (this text).
+             -p         : \t Print output to screen in one line. Do not output to file.
+            --p         : \t Pretty print output to screen , one entry per-line. Do not output to file.
+    
+"""
 import os
+import sys
+
 from pprint import pprint
 
 from preprocessing import process_inputs
-
 from custom_type_annotations import NumberOfSlices
 from custom_type_annotations import RepetitionTime
 from custom_type_annotations import SliceOrdering
@@ -40,23 +55,47 @@ def __write_to_file(filename: str, slice_timings: SliceTimings):
     
 
 
-def main(tr: RepetitionTime, num_slices: NumberOfSlices):
+def main(tr: RepetitionTime, num_slices: NumberOfSlices, op=None):
     """Generates fMRI scan slice timings.
     Usage:
         python clice_timing.py tr num_slices
         Outputs to screen and txt file to current working directory.
     
     """
+    global cli_args
     filename = __construct_filename(tr, num_slices)
     slice_timings = slice_times(tr=tr, num_slices=num_slices)
-    pprint(slice_timings)
-    __write_to_file(filename=filename,slice_timings=slice_timings)
+    if op == 'print':
+        print(slice_timings)
+        sys.exit()
+    elif op == 'pprint':
+        pprint(slice_timings)
+        sys.exit()
+    else:
+        print(slice_timings)
+        __write_to_file(filename=filename,slice_timings=slice_timings)
     
     
 def cli():
-    import sys
+    """
+    Basic Command line interface implementation
+    :return: None
+    """
     cli_args = sys.argv
-    main(cli_args[1], cli_args[2])
+    if '-h' in cli_args or '--help' in cli_args:
+        print(__doc__)
+        sys.exit()
+    if '-p' in cli_args:
+        op = 'print'
+    elif '-pp' in cli_args:
+        op = 'pprint'
+    else:
+        op = None
+    try:
+        main(cli_args[1], cli_args[2], op)
+    except IndexError:
+        print(__doc__)
+        
 
 if __name__ == '__main__':
     # main(3, 48)
