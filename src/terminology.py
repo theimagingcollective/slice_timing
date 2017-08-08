@@ -10,4 +10,5 @@ NumberOfSlices = NewType('NumberOfSlices', int)
 SliceScanOrder = NewType('SliceScanOrder', List[int])
 SliceOrdering = NewType('SliceOrdering', Union['interleaved', 'straight'])
 SliceParams = NewType('SliceParams', NamedTuple)
+SliceTimings= NewType('SliceTimings', List[int])
 
