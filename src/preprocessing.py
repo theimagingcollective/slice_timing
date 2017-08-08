@@ -5,9 +5,9 @@ Uage:
 """
 from collections import namedtuple
 
-from src.terminology import NumberOfSlices
-from src.terminology import RepetitionTime
-from src.terminology import SliceScanOrder
+from custom_type_annotations import NumberOfSlices
+from custom_type_annotations import RepetitionTime
+from custom_type_annotations import SliceScanOrder
 
 
 SlicesInfo = namedtuple('SlicesInfo', 'repetitiontime num_slices scan_order')
