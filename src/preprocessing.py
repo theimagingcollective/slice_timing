@@ -3,6 +3,7 @@ Module for preprocessing input for calculating slice timings.
 Uage:
     from preprocessing import process_inputs
 """
+import sys
 from collections import namedtuple
 
 from custom_type_annotations import NumberOfSlices
@@ -41,10 +42,12 @@ def __preprocess_repetitiontime(tr: str):
     try:
         tr = int(tr)
     except ValueError:
-        raise ValueError('Repetition time has to be a positive integer')
+        print('Repetition time has to be a positive integer')
+        sys.exit()
     else:
         if tr <= 0:
-            raise ValueError('Repetition time can not be zero or negative')
+            print('Repetition time can not be zero or negative')
+            sys.exit()
     return tr
 
 
@@ -59,10 +62,12 @@ def __preprocess_num_slices(num_slices):
     try:
         num_slices = int(num_slices)
     except ValueError:
-        raise ValueError('Number of slices has to be a positive integer')
+        print('Number of slices has to be a positive integer')
+        sys.exit()
     else:
         if num_slices < 1:
-            raise ValueError('Number of slices must be 1 or more')
+            print('Number of slices must be 1 or more')
+            sys.exit()
     return num_slices
 
 
@@ -82,7 +87,8 @@ def __preprocess_scan_order(num_slices, ordering):
     elif ordering == 'straight':  # regular scan order
         scan_order = list(range(0, num_slices))
     else:
-        raise ValueError("Invalid argument: ordering only accepts: interleaved | straight")
+        print("Invalid argument: ordering only accepts: interleaved | straight")
+        sys.exit()
     return scan_order
 
 
