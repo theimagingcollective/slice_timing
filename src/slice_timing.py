@@ -9,7 +9,7 @@ Usage:
     Optional Arguments:
              -h, --help : \t Diplays the help (this text).
              -p         : \t Print output to screen in one line. Do not output to file.
-            --p         : \t Pretty print output to screen , one entry per-line. Do not output to file.
+            -pp         : \t Pretty print output to screen , one entry per-line. Do not output to file.
     
 """
 import os
@@ -82,6 +82,16 @@ def cli():
     :return: None
     """
     cli_args = sys.argv
+    op = {
+        '-p': print,
+        '-pp': pprint,
+        }
+    for op_ in op.keys():
+        try:
+            op_idx = cli_args.index(op_)
+        except ValueError:
+            continue
+    
     if '-h' in cli_args or '--help' in cli_args:
         print(__doc__)
         sys.exit()
