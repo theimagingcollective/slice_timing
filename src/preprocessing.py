@@ -76,15 +76,15 @@ def __preprocess_scan_order(num_slices, ordering):
     Generates & typechecks the order in which slices are scanned.
     :param num_slices: number of slices returned by __preprocess_num_slices()
     :type num_slices: int
-    :param ordering: order in which slices have been scanned, 'interleaved' or 'straight'
-    :type ordering: SliceOrdering Unnion['interleaved', 'straight'] (str)
+    :param ordering: order in which slices have been scanned, 'interleaved' or 'sequential'
+    :type ordering: SliceOrdering Unnion['interleaved', 'sequential'] (str)
     :return: scan_order
     :rtype: SliceScanOrder List[int]
     """
     if ordering == 'interleaved':  # even-numbered scans followed by odd-numbered scans
         scan_order = list(range(0, num_slices, 2))
         scan_order.extend(list(range(1, num_slices, 2)))
-    elif ordering == 'straight':  # regular scan order
+    elif ordering == 'sequential':  # regular scan order
         scan_order = list(range(0, num_slices))
     else:
         print("Invalid argument: ordering only accepts: interleaved | straight")
