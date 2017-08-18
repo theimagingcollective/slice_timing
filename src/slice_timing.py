@@ -1,9 +1,9 @@
 """
 Generates fMRI scan slice timings.
 Usage:
-    $<python> <path>/slice_timing.py [-h, --help] tr num_slices [-p, -pp]
+    $<python> <path>/slice_timing.py [-h, --help] rep_time num_slices [-p, -pp]
     
-    Mandatory Arguments: Repetition time (tr), number of slices (num_slices)
+    Mandatory Arguments: Repetition time (rep_time), number of slices (num_slices)
     Default: Outputs to screen and txt file in current working directory.
     
     Optional Arguments:
@@ -22,28 +22,33 @@ from custom_type_annotations import NumberOfSlices
 from custom_type_annotations import RepetitionTime
 from custom_type_annotations import SliceOrdering
 from custom_type_annotations import SliceTimings
+from cli import get_cli_args
 
 
-def slice_times(tr: RepetitionTime, num_slices: NumberOfSlices, slices_order: SliceOrdering='interleaved'):
+def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: SliceOrdering, precision,
+                unit,
+                output,
+                verbose,
+                ):
     """
     Calculates the slice times and returns them as a list of floats.
     :param: Repetition Time (TR) in ms
     :param: Number of slices (int)
     :param: Scan Order of Slices (list[int])
     """
-    slices_params = process_inputs(tr, num_slices, slices_order)
+    slices_params = process_inputs(rep_time, num_slices, order)
     delta = slices_params.repetitiontime / slices_params.num_slices
     slice_timing = [slice_ * delta for slice_ in slices_params.scan_order]
     # slice_timing = sorted(list(zip(slices_params.scan_order, del_slice)))
     return slice_timing
 
 
-def __construct_filename(tr: RepetitionTime, num_slices: NumberOfSlices):
+def __construct_filename(rep_time: RepetitionTime, num_slices: NumberOfSlices):
     curr_dir = os.path.realpath(os.getcwd())
     try:
-        filename = 'slicetimes-tr{}-n{}{}txt'.format(tr, num_slices, os.extsep)
+        filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
     except TypeError:
-        filename = 'slicetimes-tr{}-n{}{}txt'.format(tr, num_slices, os.extsep)
+        filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
     finally:
         return os.path.join(curr_dir,filename)
 
@@ -52,17 +57,40 @@ def __write_to_file(filename: str, slice_timings: SliceTimings):
     slice_timings = str(slice_timings).strip('[').rstrip(']')
     with open(filename, 'w') as writeobj:
         writeobj.write(slice_timings)
-    
 
 
-def main(tr: RepetitionTime, num_slices: NumberOfSlices, op=None):
+def main():
+    """Generates fMRI scan slice timings.
+    Usage:
+        python slice_timing.py rep_time num_slices
+        Outputs to screen and txt file to current working directory.
+
+    """
+    cli_args = get_cli_args()
+    print(cli_args)
+    print(cli_args.__dict__)
+    filename = __construct_filename(cli_args.rep_time, cli_args.num_slices)
+    print(filename)
+    slice_timings = slice_times(
+                rep_time=cli_args.rep_time,
+                num_slices=cli_args.num_slices,
+                precision=cli_args.precision,
+                unit=cli_args.unit,
+                output=cli_args.output,
+                verbose=cli_args.verbose,
+                order=cli_args.order,
+                )
+    print(slice_timings)
+
+
+def main2(tr: RepetitionTime, num_slices: NumberOfSlices, op=None):
     """Generates fMRI scan slice timings.
     Usage:
         python clice_timing.py tr num_slices
         Outputs to screen and txt file to current working directory.
     
     """
-    global cli_args
+    
     filename = __construct_filename(tr, num_slices)
     slice_timings = slice_times(tr=tr, num_slices=num_slices)
     if op == 'print':
@@ -109,10 +137,13 @@ def cli():
 
 if __name__ == '__main__':
     # main(3, 48)
+    main()
     # import plac
     # plac.call(main)
-    cli()
+    # cli()
+    
     """
+    
     :TODO:
     Write more tests
     Remove complicated custom type annotations.
