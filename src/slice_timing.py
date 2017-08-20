@@ -88,24 +88,5 @@ if __name__ == '__main__':
     Write more tests
     Remove complicated custom type annotations.
     Refine the CLI
-    
-    Old Doc string:
-    Usage:
-    slice_timings [-h, --help] -tr <repetition time in ms> -ns <number of slices>
-    
-    Mandatory arguments:
-    tr \t Specifies the repetition time (TR)  for the scan in ms. Positive integer.
-    slices \t Specifies the number of slices in the scan. Positive integer.
-    
-    Optional arguments:
-    -h, --help \t Displays the help (this text).
-    -o, --order \t Order in which slices are scanned
-        \t\t interleaved (default): even slices then odd slices
-        \t\t striaght: regular order
-        
-    -op, --output \t Specifies how the output will be presented.
-                        file (default): Output is saved to a text file as multiline CSV
-                        s, screen: Output is shown on screen
-    
     """
     
