@@ -9,49 +9,69 @@ from collections import namedtuple
 from custom_type_annotations import NumberOfSlices
 from custom_type_annotations import RepetitionTime
 from custom_type_annotations import SliceScanOrder
+from custom_type_annotations import SliceOrdering
 
 
-SlicesInfo = namedtuple('SlicesInfo', 'repetitiontime num_slices scan_order')
+SlicesParams = namedtuple('SlicesParams',
+                        '''repetitiontime
+                        num_slices
+                        scan_order
+                        precision
+                        unit
+                        output
+                        verbose''')
 
 
-def process_inputs(tr: RepetitionTime, num_slices: NumberOfSlices, ordering: SliceScanOrder) -> SlicesInfo:
+def process_inputs(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: SliceOrdering, precision,
+                unit,
+                output,
+                verbose
+                ) -> SlicesParams:
     """
     Helper function for slice_times() arg processing.
     :param: Repetition Time (TR) in ms
     :param: Number of slices (int)
     :param: Scan Order of Slices (list[int])
-    :return: Nmaedtuple SlicesInfo.repetitiontime (int), SlicesInfo.num_slices (int), SlicesInfo.ordering (list of ints)
+    :return: Nmaedtuple SlicesParams.repetitiontime (int), SlicesParams.num_slices (int), SlicesParams.ordering (list of ints)
     """
-    tr = __preprocess_repetitiontime(tr)
-    num_slices = __preprocess_num_slices(num_slices)
+    rep_time = _preprocess_repetitiontime(rep_time)
+    num_slices = _preprocess_num_slices(num_slices)
 
-    scan_order = __preprocess_scan_order(num_slices, ordering)
+    scan_order = _preprocess_scan_order(num_slices, order)
+    unit = _preprocess_unit(unit=unit,rep_time=rep_time)
     
-    slice_params = SlicesInfo(repetitiontime=tr, num_slices=num_slices, scan_order=scan_order)
+    slice_params = SlicesParams(repetitiontime=rep_time,
+                                num_slices=num_slices,
+                                scan_order=scan_order,
+                                precision=precision,
+                                unit=unit,
+                                output=output,
+                                verbose=verbose,
+                                )
     return slice_params
 
 
-def __preprocess_repetitiontime(tr: str):
+def _preprocess_repetitiontime(rep_time: str):
     """
     Preprocesses & typechecks repetition time
-    :param tr: repetition time entered via the command line.
+    :param rep_time: repetition time entered via the command line.
     :type: str
-    :return: tr
+    :return: rep_time
     :rtype: RepetitionTime: int
     """
     try:
-        tr = int(tr)
+        rep_time = int(rep_time)
     except ValueError:
         print('Repetition time has to be a positive integer')
         sys.exit()
     else:
-        if tr <= 0:
+        if rep_time <= 0:
             print('Repetition time can not be zero or negative')
             sys.exit()
-    return tr
+    return rep_time
 
 
-def __preprocess_num_slices(num_slices):
+def _preprocess_num_slices(num_slices):
     """
     Preprocesses & typechecks number of slices.
     :param num_slices: number of slices entered via the command line.
@@ -71,26 +91,56 @@ def __preprocess_num_slices(num_slices):
     return num_slices
 
 
-def __preprocess_scan_order(num_slices, ordering):
+def _preprocess_scan_order(num_slices, order):
     """
     Generates & typechecks the order in which slices are scanned.
-    :param num_slices: number of slices returned by __preprocess_num_slices()
+    :param num_slices: number of slices returned by _preprocess_num_slices()
     :type num_slices: int
-    :param ordering: order in which slices have been scanned, 'interleaved' or 'sequential'
-    :type ordering: SliceOrdering Unnion['interleaved', 'sequential'] (str)
+    :param order: order in which slices have been scanned, 'interleaved' or 'sequential'
+    :type order: SliceOrdering Unnion['interleaved', 'sequential'] (str)
     :return: scan_order
     :rtype: SliceScanOrder List[int]
     """
-    if ordering == 'interleaved':  # even-numbered scans followed by odd-numbered scans
+    if order == 'interleaved':  # even-numbered scans followed by odd-numbered scans
         scan_order = list(range(0, num_slices, 2))
         scan_order.extend(list(range(1, num_slices, 2)))
-    elif ordering == 'sequential':  # regular scan order
+    elif order == 'sequential':  # regular scan order
         scan_order = list(range(0, num_slices))
     else:
-        print("Invalid argument: ordering only accepts: interleaved | straight")
+        print("Invalid argument: order only accepts: interleaved | sequential")
         sys.exit()
     return scan_order
 
 
+def _preprocess_unit(unit, rep_time):
+    if unit == 'auto':
+        try:
+            rep_time_f = float(rep_time)
+        except ValueError:
+            raise ValueError('Repetition time must be a positive float or integer.')
+        else:
+            if rep_time_f <= 0:
+                raise ValueError('Repetition time can not be zero or a negative number.')
+        
+        float_int_diff = rep_time_f - int(rep_time)
+        if float_int_diff:
+            unit = 's'
+        else:
+            unit = 'ms'
+        return unit
+    
+        
+# TODO: implement Decimal in place of floats and int
 
 
+def _preprocess_precision(precision):
+    pass
+
+
+def test_preprocessing():
+    print(_preprocess_unit('auto', 654))
+    print(_preprocess_unit('auto', 0.654))
+
+
+if __name__ == '__main__':
+    test_preprocessing()
