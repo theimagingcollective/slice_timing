@@ -24,11 +24,12 @@ from custom_type_annotations import SliceOrdering
 from custom_type_annotations import SliceTimings
 from cli import get_cli_args
 
+from output import output_slice_timings
 
-def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: SliceOrdering, precision,
-                unit,
-                output,
-                verbose,
+def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, *, order: SliceOrdering='interleaved', precision=6,
+                unit='auto',
+                output='show',
+                verbose=False
                 ):
     """
     Calculates the slice times and returns them as a list of floats.
@@ -36,41 +37,31 @@ def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: Sli
     :param: Number of slices (int)
     :param: Scan Order of Slices (list[int])
     """
-    slices_params = process_inputs(rep_time, num_slices, order)
+    slices_params = process_inputs(rep_time, num_slices, order, precision,
+                unit,
+                output,
+                verbose,
+                )
+    print(slices_params)
+    # quit()
     delta = slices_params.repetitiontime / slices_params.num_slices
     slice_timing = [slice_ * delta for slice_ in slices_params.scan_order]
     # slice_timing = sorted(list(zip(slices_params.scan_order, del_slice)))
     return slice_timing
 
 
-def __construct_filename(rep_time: RepetitionTime, num_slices: NumberOfSlices):
-    curr_dir = os.path.realpath(os.getcwd())
-    try:
-        filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
-    except TypeError:
-        filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
-    finally:
-        return os.path.join(curr_dir,filename)
-
-
-def __write_to_file(filename: str, slice_timings: SliceTimings):
-    slice_timings = str(slice_timings).strip('[').rstrip(']')
-    with open(filename, 'w') as writeobj:
-        writeobj.write(slice_timings)
-
-
-def main():
+def main(args_for_testing: str=None):
     """Generates fMRI scan slice timings.
     Usage:
         python slice_timing.py rep_time num_slices
         Outputs to screen and txt file to current working directory.
 
     """
-    cli_args = get_cli_args()
+    cli_args = get_cli_args(args_for_testing)
     print(cli_args)
-    print(cli_args.__dict__)
-    filename = __construct_filename(cli_args.rep_time, cli_args.num_slices)
-    print(filename)
+    # print(cli_args.__dict__)
+    # filename = _construct_filename(cli_args.rep_time, cli_args.num_slices)
+    # print(filename)
     slice_timings = slice_times(
                 rep_time=cli_args.rep_time,
                 num_slices=cli_args.num_slices,
@@ -78,66 +69,15 @@ def main():
                 unit=cli_args.unit,
                 output=cli_args.output,
                 verbose=cli_args.verbose,
-                order=cli_args.order,
+                order=cli_args.order
                 )
-    print(slice_timings)
+    output_slice_timings(slice_timings, cli_args.output)
 
 
-def main2(tr: RepetitionTime, num_slices: NumberOfSlices, op=None):
-    """Generates fMRI scan slice timings.
-    Usage:
-        python clice_timing.py tr num_slices
-        Outputs to screen and txt file to current working directory.
-    
-    """
-    
-    filename = __construct_filename(tr, num_slices)
-    slice_timings = slice_times(tr=tr, num_slices=num_slices)
-    if op == 'print':
-        print(slice_timings)
-        sys.exit()
-    elif op == 'pprint':
-        pprint(slice_timings)
-        sys.exit()
-    else:
-        print(slice_timings)
-        __write_to_file(filename=filename,slice_timings=slice_timings)
-    
-    
-def cli():
-    """
-    Basic Command line interface implementation
-    :return: None
-    """
-    cli_args = sys.argv
-    op = {
-        '-p': print,
-        '-pp': pprint,
-        }
-    for op_ in op.keys():
-        try:
-            op_idx = cli_args.index(op_)
-        except ValueError:
-            continue
-    
-    if '-h' in cli_args or '--help' in cli_args:
-        print(__doc__)
-        sys.exit()
-    if '-p' in cli_args:
-        op = 'print'
-    elif '-pp' in cli_args:
-        op = 'pprint'
-    else:
-        op = None
-    try:
-        main(cli_args[1], cli_args[2], op)
-    except IndexError:
-        print(__doc__)
-        
 
 if __name__ == '__main__':
     # main(3, 48)
-    main()
+    main('3, 4')
     # import plac
     # plac.call(main)
     # cli()
