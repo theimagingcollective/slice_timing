@@ -1,0 +1,158 @@
+
+
+2) Output the order of the slices as a separate array.  
+something like “SliceOrder”: [ 0, 1, 2, 3 ,4 5 …]
+
+The suggested output format is to mimic a key value pair in a JSON file. This will allow users to simply cut and paste the results into the BIDS json format
+
+From the BIDS documentation
+
+8.4.1 Example:
+sub-control01/
+func/
+sub-control01_task-nback_bold.json
+{
+    “RepetitionTime”: 3.0,
+    “EchoTime”: 0.03,
+    “FlipAngle”: 78,
+    “SliceTiming”: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8],
+    “MultibandAccellerationFactor”: 4,
+    “ParallelReductionFactorInPlane”: 2,
+    “PhaseEncodingDirection”: “j”,
+    “InstitutionName”: “Stanford University”,
+    “InstitutionAddress: “450 Serra Mall, Stanford, CA 94305-2004, USA”,
+    “DeviceSerialNumber”: “11035”
+    }
+
+https://docs.google.com/document/d/1HFUkAEE-pB-angVcYe6pf_-fVf4sCpOHKesUvfb8Grc/edit#
+
+I am not sure if the link will work
+http://bids.neuroimaging.io/
+Goto Comment on BIDS draft
+
+
+Can you write the code so I can call  slicetimings in a another function?
+
+I am asking you do to do this for selfish reasons.  
+I not sure I will ever need to call this function.  
+I just don’t know how to do it properly.  
+If I saw how you do it for a simple example I could learn.
+Right now I setup a package like this
+
+label/label
+label/label/__init__.py
+label/label/measure.py
+I can then import label into another python file. I then call label.measure(…) in that function.
+The problem is how to call measure from the command line.  For this I setup either a link to call measure.py as label_measure.py or I setup an alias.
+In either case it seems messy.
+I also have problems referencing modules when I try to import them.
+
+We will need to create the following json file.
+
+{
+    "RepetitionTime": 3.0,
+    "Instruction": "Lie still and keep your eyes open",
+    "TaskName": "rest",
+    "EchoTime": 0.030,
+    "PhaseEncodingDirection" : "j",
+    "EffectiveEchoSpacing" : .000525,
+    "ParallelReductionFactorInPlane":1,
+    "NumberOfVolumesDiscardedByScanner" : 4,
+    "SliceTiming": [ 0.0, 1.5, 0.0625, 1.5625, 0.125, 1.625, 0.1875, 1.6875, 0.25, 1.75,
+                     0.3125, 1.8125, 0.375, 1.875, 0.4375, 1.9375, 0.5, 2.0, 0.5625,
+                     2.0625, 0.625, 2.125, 0.6875, 2.1875, 0.75, 2.25, 0.8125, 2.3125,
+                     0.875, 2.375, 0.9375, 2.4375, 1.0, 2.5, 1.0625, 2.5625, 1.125, 2.625,
+                     1.1875, 2.6875, 1.25, 2.75, 1.3125, 2.8125, 1.375, 2.875, 1.4375, 2.9375
+                      ]
+      }
+
+I was thinking we could write a simply function to create this json file for us
+
+You wanna create this json and place it in DICOM header?
+No.  I just want to read the DICOM header and create the JSON.
+There are only a few fields we need to read.
+
+JSON file specifications can be found in the BIDS documentation
+
+I think what would be a great help to the team is I put you in charge of the DICOM to NIFTI to BIDS conversion.
+
+yes I created a draft of read_dicom.py
+I thought it would be helpful.
+I still have to find the correct DICOM field for number of slices
+Craig would know this information at the top of his head.
+Would you be willing to take on the DICOM to NIFTI to BIDS conversion project?
+
+If there's any science or math knowledge needed, the complexity of the project and so on
+No.  It’s nothing like that.
+Code is written in bash.
+All the functions exist.  It just needs to be cleaned up and put in Python.
+
+NIFTI to BIDS still has be to done.
+It is on my list.
+It is essential for the data processing.
+
+You can do it.  BASH script is very simple.
+
+Our DICOM to NIFTI conversion is based upon FreeSurfer. I like this tool but there may be other alternatives.
+
+dcm2nifti.zip  -- Here are the bash scripts I use to convert DICOM to NIFTI.   The word document contains instructions.
+
+
+
+dcm2nifti.zip
+107kB
+
+We do a three step process
+
+1) Move the files
+
+2) Scan the DICOM files and create a dcmConvertAll.cfg file
+1 ../nifti nii localizer_rs01.nii.gz
+2 ../nifti nii sag_mprage_rs02.nii.gz
+3 ../nifti nii sag_swi_rs03.nii.gz
+4 ../nifti nii sag_swi_rs04.nii.gz
+5 ../nifti nii sag_swi_rs05.nii.gz
+6 ../nifti nii sag_swi_rs06.nii.gz
+7 ../nifti nii sag_t2tse_rs07.nii.gz
+8 ../nifti nii sag_t2flair_rs08.nii.gz
+9 ../nifti nii ax_dki_P>>A_rs09.nii.gz
+10 ../nifti nii ax_dki_P>>A_rs10.nii.gz
+11 ../nifti nii ax_dki_P>>A_rs11.nii.gz
+12 ../nifti nii ax_dki_P>>A_rs12.nii.gz
+13 ../nifti nii ax_dki_P>>A_rs13.nii.gz
+
+The user then edits this file to select which files to convert.
+
+I usually write a small sed program to create a first attempt at this
+
+9 ../nifti nii dki_rs01.nii.gz
+14 ../nifti nii dki_topup_ap_rs01.nii.gz
+15 ../nifti nii dki_topup_pa_rs01.nii.gz
+37 ../nifti nii dti_rs01.nii.gz
+42 ../nifti nii dti_topup_ap_rs01.nii.gz
+43 ../nifti nii dti_topup_pa_rs01.nii.gz
+44 ../nifti nii fmap_magnitude_rs01.nii.gz
+45 ../nifti nii fmap_phase_rs01.nii.gz
+16 ../nifti nii mt_m0_rs01.nii.gz
+27 ../nifti nii mt_m0_rs02.nii.gz
+29 ../nifti nii mt_m0_rs03.nii.gz
+17 ../nifti nii mt_m1_rs01.nii.gz
+
+Once the user is happy with the final cfg file we then convert the files to NIFTI with the bash script dcm_convert
+The whole conversion process could be written in Python and even better yet it could use NiPype.
+NiPype may be overkill though
+Keep it simple right
+Take a look and let me know what you think
+The most important thing is the user needs to create a configuration file to select and rename the files.  
+This task SHOULD not be automated.  I have tried and it is just too hard. The user must select the files.
+The other problem that I haven’t solved yet is the DICOM to NIFTI conversion of DTI and DKI files.
+The b-values and b-vectors are not written out.
+However, these can be obtained from the DICOM header so maybe you can solve that problem too.
+The other tool to use is dcm2nii
+This does the conversion but the naming convention is a problem
+
+Information for future reference
+http://neurohut.blogspot.com/2015/11/how-to-extract-bval-bvec-from-dicom.html
+
+
+
