@@ -11,7 +11,7 @@ from custom_type_annotations import NumberOfSlices
 from custom_type_annotations import RepetitionTime
 from custom_type_annotations import SliceOrdering
 from cli import get_cli_args
-from output import output_slice_timings
+from output import output_slices_info
 
 
 def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, *,
@@ -44,7 +44,7 @@ def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, *,
     getcontext().prec = precision
     delta = slices_params.repetitiontime / slices_params.num_slices
     slice_timing = [slice_ * delta for slice_ in slices_params.scan_order]
-    return slice_timing
+    return slice_timing, slices_params.scan_order
 
 
 def main(args_for_testing: str=None):
@@ -55,8 +55,7 @@ def main(args_for_testing: str=None):
     <python3> slice_timing.py -h or --help for detailed help.
     """
     cli_args = get_cli_args(args_for_testing)
-    print(cli_args)
-    slice_timings = slice_times(
+    slice_timings, slice_order = slice_times(
                 rep_time=cli_args.rep_time,
                 num_slices=cli_args.num_slices,
                 precision=cli_args.precision,
@@ -65,9 +64,9 @@ def main(args_for_testing: str=None):
                 verbose=cli_args.verbose,
                 order=cli_args.order
                 )
-    output_slice_timings(slice_timings=slice_timings, dest=cli_args.output,
-                         rep_time=cli_args.rep_time, num_slices=cli_args.num_slices)
-
+    output_slices_info(slice_timings=slice_timings,slice_order=slice_order, dest=cli_args.output,
+                       rep_time=cli_args.rep_time, num_slices=cli_args.num_slices)
+    
 
 if __name__ == '__main__':
     main()
