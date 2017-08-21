@@ -5,10 +5,11 @@ Uage:
 """
 import sys
 from collections import namedtuple
+from decimal import Decimal
+from decimal import InvalidOperation
 
 from custom_type_annotations import NumberOfSlices
 from custom_type_annotations import RepetitionTime
-from custom_type_annotations import SliceScanOrder
 from custom_type_annotations import SliceOrdering
 
 
@@ -29,10 +30,10 @@ def process_inputs(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: 
                 ) -> SlicesParams:
     """
     Helper function for slice_times() arg processing.
-    :param: Repetition Time (TR) in ms
-    :param: Number of slices (int)
-    :param: Scan Order of Slices (list[int])
-    :return: Nmaedtuple SlicesParams.repetitiontime (int), SlicesParams.num_slices (int), SlicesParams.ordering (list of ints)
+     - Repetition Time (TR) in ms
+     - Number of slices (int)
+     - Scan Order of Slices (list[int])
+    :returns: Nmaedtuple SlicesParams.repetitiontime (int), SlicesParams.num_slices (int), SlicesParams.ordering (list of ints)
     """
     rep_time = _preprocess_repetitiontime(rep_time)
     num_slices = _preprocess_num_slices(num_slices)
@@ -51,22 +52,20 @@ def process_inputs(rep_time: RepetitionTime, num_slices: NumberOfSlices, order: 
     return slice_params
 
 
-def _preprocess_repetitiontime(rep_time: str):
+def _preprocess_repetitiontime(rep_time: RepetitionTime):
     """
     Preprocesses & typechecks repetition time
-    :param rep_time: repetition time entered via the command line.
-    :type: str
-    :return: rep_time
-    :rtype: RepetitionTime: int
+     - rep_time: repetition time entered via the command line.
+    :returns: rep_time (Decimal)
     """
     try:
-        rep_time = int(rep_time)
-    except ValueError:
-        print('Repetition time has to be a positive integer')
+        rep_time = Decimal(rep_time)
+    except InvalidOperation as excep:
+        print('ERROR: Repetition time has to be a positive number')
         sys.exit()
     else:
         if rep_time <= 0:
-            print('Repetition time can not be zero or negative')
+            print('ERROR: Repetition time can not be zero or negative')
             sys.exit()
     return rep_time
 
@@ -74,10 +73,8 @@ def _preprocess_repetitiontime(rep_time: str):
 def _preprocess_num_slices(num_slices):
     """
     Preprocesses & typechecks number of slices.
-    :param num_slices: number of slices entered via the command line.
-    :type: str
-    :return: num_slices
-    :rtype: NumberOfSlices: int
+     - num_slices: (NumOfSlices, int) number of slices entered via the command line.
+    :returns: (NumOfSlices, Decimal) num_slices
     """
     try:
         num_slices = int(num_slices)
@@ -117,10 +114,10 @@ def _preprocess_unit(unit, rep_time):
         try:
             rep_time_f = float(rep_time)
         except ValueError:
-            raise ValueError('Repetition time must be a positive float or integer.')
+            print('Repetition time must be a positive float or integer.')
         else:
             if rep_time_f <= 0:
-                raise ValueError('Repetition time can not be zero or a negative number.')
+                print('Repetition time can not be zero or a negative number.')
         
         float_int_diff = rep_time_f - int(rep_time)
         if float_int_diff:
@@ -129,18 +126,15 @@ def _preprocess_unit(unit, rep_time):
             unit = 'ms'
         return unit
     
-        
-# TODO: implement Decimal in place of floats and int
-
-
-def _preprocess_precision(precision):
-    pass
-
 
 def test_preprocessing():
-    print(_preprocess_unit('auto', 654))
-    print(_preprocess_unit('auto', 0.654))
+    cli_in = sys.argv
+    print(_preprocess_repetitiontime(cli_in[1]))
+    # print(_preprocess_repetitiontime('3a'))
+    # print(_preprocess_unit('auto', 3.0))
+    # print(_preprocess_unit('auto', 0.654))
 
 
 if __name__ == '__main__':
     test_preprocessing()
+    # _preprocess_repetitiontime()

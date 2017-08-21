@@ -1,12 +1,48 @@
 import os
 
+from decimal import Decimal
 from typing import List
+from typing import Union
 from custom_type_annotations import RepetitionTime
 from custom_type_annotations import NumberOfSlices
-from custom_type_annotations import SliceTimings
 
 
-def _reformat_slice_times(slice_timings):
+
+def output_slice_timings(slice_timings: List, dest: str='show', rep_time: Decimal=None, num_slices: int=None) -> Union[None, str]:
+    '''
+    Prints or saves the calculated slice timings.
+     - slice_timings: (str) Formatted represntation of slice timings.
+     
+     Optional args: (* indicates default)
+     
+     - dest: (str) Destination of output, Print on screen, save to file, or return the unformatted list.
+        *'show'|'save'| 'list'
+     - rep_time: (Decimal) Repetition time (TR)
+     - num_slices: (int) Number of slices scanned.
+    
+    :return: Union[None, str(formatted timings)]
+    '''
+    slice_timings_str = _reformat_slice_times(slice_timings)
+    if dest == 'show':
+        print('\n', slice_timings_str)
+    elif dest == 'save':
+        if rep_time and num_slices:
+            filename = _construct_filename(rep_time, num_slices)
+            _write_to_file(filename=filename, formatted_slice_timings=slice_timings_str)
+        else:
+            print('Missing args: rep_time and num_slices are necessary for file creation.')
+    elif dest == 'list':
+        print(slice_timings)
+    else:
+        return slice_timings_str
+    
+
+def _reformat_slice_times(slice_timings: List[Decimal]) -> str:
+    '''
+    Helper function to convert list of calculated slice timings into a neatly formatted, readable string.
+    :param slice_timings: (List[Decimals]) Raw list of calculated slice timings.
+    :return: Formatted string of calculated slice timings.
+    '''
     op_pfx = '"SliceTiming": ['
     gutter_len = len(op_pfx)
     gutter_insert = ''.join([',\n', ' '*gutter_len])
@@ -17,34 +53,32 @@ def _reformat_slice_times(slice_timings):
     return slice_timings_str
 
 
-def _construct_filename(rep_time: RepetitionTime, num_slices: NumberOfSlices) -> object:
+def _construct_filename(rep_time: RepetitionTime, num_slices: NumberOfSlices) -> str:
+    """
+    Helper function to construct a filename using repetition time and number of slices scanned.
+     - rep_time: (RepetitionTime, Decimal)
+     - num_slices:  (NumberOfSlices, int)
+    :returns: (str) Full path to file to which data will be saved.
+    """
     curr_dir = os.path.realpath(os.getcwd())
     try:
         filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
     except TypeError:
         filename = 'slicetimes-tr{}-n{}{}txt'.format(rep_time, num_slices, os.extsep)
     finally:
-        return os.path.join(curr_dir,filename)
+        return os.path.join(curr_dir, filename)
 
 
-def _write_to_file(filename: str, slice_timings: SliceTimings):
-    slice_timings = str(slice_timings).strip('[').rstrip(']')
+def _write_to_file(filename: str, formatted_slice_timings: str):
+    """
+    Helper function to write the formatted slice timings string to a text file.
+     - filename: (str)
+     - formatted_slice_timings: (str)
+    :returns:
+    """
     with open(filename, 'w') as writeobj:
-        writeobj.write(slice_timings)
+        writeobj.write(formatted_slice_timings)
     print('Slice times saved to {}'.format(filename))
-        
-        
-def output_slice_timings(slice_timings: List, dest: str='show'):
-    slice_timings_str = _reformat_slice_times(slice_timings)
-    if dest == 'show':
-        print('\n', slice_timings_str)
-    elif dest == 'save':
-        filename = _construct_filename()
-        _write_to_file(filename=filename, slice_timings=slice_timings_str)
-    elif dest == 'list':
-        print(slice_timings)
-    else:
-        return slice_timings_str
         
 
 def test_data():
@@ -72,4 +106,4 @@ def test_data():
 
 if __name__ == '__main__':
     slice_timings = test_data()
-    (_reformat_slice_times(slice_timings))
+    _reformat_slice_times(slice_timings)
