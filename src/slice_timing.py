@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Generates fMRI scan slice timings.
 """
