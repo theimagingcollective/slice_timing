@@ -15,8 +15,9 @@ from output import output_slices_info
 
 
 def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, *,
-            order: SliceOrdering='interleaved', precision=6, unit='auto', output='show', verbose=False
-            ) -> List[Decimal]:
+                order: SliceOrdering='interleaved', precision=6, unit='auto', output='show', verbose=False,
+                as_float=True,
+                ) -> List[Decimal]:
     """
     Generates fMRI slice timings. Returns a list of Decimals.
     mandatory args: repetition time (Decimal), number of slices (int)
@@ -35,15 +36,19 @@ def slice_times(rep_time: RepetitionTime, num_slices: NumberOfSlices, *,
      - unit: (str) Specifies the unit of time to be used for the calculation.
         Choices: *auto, s, ms (default: auto)
           auto sets unit to ms if rep_time is int, s if Decimal
+     - as_float: (bool) outputs the timing as list of floats or decimals.
+        Choices: *True, False
     """
     slices_params = process_inputs(rep_time, num_slices, order, precision,
-                unit,
-                output,
-                verbose,
-                )
+                                   unit,
+                                   output,
+                                   verbose,
+                                   )
     getcontext().prec = precision
     delta = slices_params.repetitiontime / slices_params.num_slices
     slice_timing = [slice_ * delta for slice_ in slices_params.scan_order]
+    if as_float:
+	    slice_timing = [float(timing) for timing in slice_timing]
     return slice_timing, slices_params.scan_order
 
 
